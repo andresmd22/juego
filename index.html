@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de la Serpiente</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #282c34;
+            flex-direction: column;
+        }
+        canvas {
+            background-color: #1e1e1e;
+            border: 2px solid white;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:active {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="controls">
+        <button class="button" id="up">↑</button>
+        <button class="button" id="left">←</button>
+        <button class="button" id="right">→</button>
+        <button class="button" id="down">↓</button>
+    </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const box = 20;
+        let snake = [{ x: 10 * box, y: 10 * box }];
+        let direction = "DOWN";  // Dirección inicial hacia abajo
+        let food = {
+            x: Math.floor(Math.random() * 20) * box,
+            y: Math.floor(Math.random() * 20) * box,
+        };
+        let score = 0;  // No hay límite de puntuación, pero maximo será 999
+
+        // Controles para PC (teclas de dirección)
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowUp") direction = "UP";
+            else if (event.key === "ArrowDown") direction = "DOWN";
+            else if (event.key === "ArrowLeft") direction = "LEFT";
+            else if (event.key === "ArrowRight") direction = "RIGHT";
+        });
+
+        // Controles para móvil (botones de dirección)
+        document.getElementById("up").addEventListener("click", () => {
+            direction = "UP";
+        });
+        document.getElementById("down").addEventListener("click", () => {
+            direction = "DOWN";
+        });
+        document.getElementById("left").addEventListener("click", () => {
+            direction = "LEFT";
+        });
+        document.getElementById("right").addEventListener("click", () => {
+            direction = "RIGHT";
+        });
+
+        function drawGame() {
+            ctx.fillStyle = "#1e1e1e";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, box, box);
+
+            ctx.fillStyle = "lime";
+            snake.forEach((segment) => ctx.fillRect(segment.x, segment.y, box, box));
+
+            let headX = snake[0].x;
+            let headY = snake[0].y;
+
+            // Mover la cabeza de la serpiente según la dirección
+            if (direction === "UP") headY -= box;
+            if (direction === "DOWN") headY += box;
+            if (direction === "LEFT") headX -= box;
+            if (direction === "RIGHT") headX += box;
+
+            // Si la serpiente come la manzana
+            if (headX === food.x && headY === food.y) {
+                if (score < 999) {
+                    score++;  // Aumentar la puntuación sin límite hasta llegar a 999
+                }
+                food = {
+                    x: Math.floor(Math.random() * 20) * box,
+                    y: Math.floor(Math.random() * 20) * box,
+                };
+            } else {
+                snake.pop(); // Si no ha comido, eliminar el último segmento
+            }
+
+            // Crear un nuevo segmento para la cabeza
+            const newHead = { x: headX, y: headY };
+            snake.unshift(newHead); // Añadir la nueva cabeza al principio
+
+            // Verificar si la serpiente choca con los límites o consigo misma
+            if (
+                headX < 0 || headY < 0 || headX >= canvas.width || headY >= canvas.height ||
+                snake.slice(1).some(segment => segment.x === headX && segment.y === headY)
+            ) {
+                alert(`Game Over! Puntuación: ${score}`);
+                snake = [{ x: 10 * box, y: 10 * box }];
+                direction = "DOWN";  // Empezar de nuevo hacia abajo
+                score = 0;  // Reseteo del puntaje al iniciar el juego de nuevo
+            }
+        }
+
+        // Hacer que la serpiente se mueva más despacio (aumentar el intervalo)
+        setInterval(drawGame, 150);  // Intervalo aumentado de 100ms a 150ms para hacer el movimiento más lento
+    </script>
+</body>
+</html>
